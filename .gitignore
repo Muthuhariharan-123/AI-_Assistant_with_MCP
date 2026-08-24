@@ -1,0 +1,34 @@
+# Environment files (secrets)
+.env
+*.env.example
+Backend/.env
+
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+
+# Flutter / Dart
+frontend/.dart_tool/
+frontend/.packages
+frontend/build/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/pubspec.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
