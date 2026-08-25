@@ -10,11 +10,8 @@ A lightweight, dockerized AI personal assistant that can answer questions and pe
 
 ## How to Run
 
-1. Get a free Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
-2. Create a `.env` file in the `Backend/` folder (or at the root) and add your key:
-   ```env
-   GEMINI_API_KEY=your_actual_api_key_here
-   ```
+1. Obtain your Gemini API key.
+2. Set up your environment variables (e.g., create a `.env` file) with the required keys.
 3. Run with Docker Compose:
    ```bash
    docker compose up --build
