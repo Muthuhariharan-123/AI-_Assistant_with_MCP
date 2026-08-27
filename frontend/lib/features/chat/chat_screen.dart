@@ -13,28 +13,12 @@ class ChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
-  final _controller = TextEditingController();
   final _scrollController = ScrollController();
-  final _focusNode = FocusNode();
 
   @override
   void dispose() {
-    _controller.dispose();
     _scrollController.dispose();
-    _focusNode.dispose();
     super.dispose();
-  }
-
-  void _sendMessage() {
-    final text = _controller.text;
-    if (text.trim().isEmpty) return;
-
-    ref.read(chatProvider.notifier).sendMessage(text);
-    _controller.clear();
-    _focusNode.requestFocus();
-
-    // Scroll to bottom after a short delay to let the UI update
-    Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
   }
 
   void _scrollToBottom() {
@@ -70,7 +54,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   : _buildMessageList(chatState),
             ),
             if (chatState.error != null) _buildErrorBanner(chatState.error!),
-            _buildInputArea(chatState.isLoading),
+            const _ChatInputArea(),
           ],
         ),
       ),
@@ -228,8 +212,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget _buildSuggestionChip(String text) {
     return GestureDetector(
       onTap: () {
-        _controller.text = text;
-        _sendMessage();
+        ref.read(chatProvider.notifier).sendMessage(text);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -490,8 +473,50 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
     );
   }
+}
 
-  Widget _buildInputArea(bool isLoading) {
+/// Separate widget for the input area.
+/// This prevents the TextField from being rebuilt when the message list changes,
+/// which fixes the Flutter Web bug where the HTML input element loses keyboard input.
+class _ChatInputArea extends ConsumerStatefulWidget {
+  const _ChatInputArea();
+
+  @override
+  ConsumerState<_ChatInputArea> createState() => _ChatInputAreaState();
+}
+
+class _ChatInputAreaState extends ConsumerState<_ChatInputArea> {
+  final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _sendMessage() {
+    final text = _controller.text;
+    if (text.trim().isEmpty) return;
+
+    // Guard: don't send if already waiting for a response
+    final isLoading = ref.read(chatProvider).isLoading;
+    if (isLoading) return;
+
+    ref.read(chatProvider.notifier).sendMessage(text);
+    _controller.clear();
+    _focusNode.requestFocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Only watch isLoading — NOT the full state with messages.
+    // This ensures the TextField is never rebuilt when messages change.
+    final isLoading = ref.watch(
+      chatProvider.select((state) => state.isLoading),
+    );
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -516,14 +541,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: TextField(
                 controller: _controller,
                 focusNode: _focusNode,
-                enabled: !isLoading,
                 onSubmitted: (_) => _sendMessage(),
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 14,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Ask me anything...',
+                  hintText: isLoading ? 'Thinking...' : 'Ask me anything...',
                   hintStyle: GoogleFonts.inter(
                     color: Colors.white.withValues(alpha: 0.3),
                     fontSize: 14,

@@ -73,6 +73,12 @@ public sealed class ChatService
             var expression = args?.GetValueOrDefault("expression") ?? "";
             toolResult = await _mcpClient.CalculateAsync(expression);
         }
+        else if (string.Equals(functionName, "get_weather", StringComparison.OrdinalIgnoreCase))
+        {
+            var args = JsonSerializer.Deserialize<Dictionary<string, string>>(functionArgs);
+            var location = args?.GetValueOrDefault("location") ?? "";
+            toolResult = await _mcpClient.GetWeatherAsync(location);
+        }
         else
         {
             _logger.LogWarning("Unknown tool requested: {ToolName}", functionName);

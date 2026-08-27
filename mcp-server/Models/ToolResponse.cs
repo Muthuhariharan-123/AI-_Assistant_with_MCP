@@ -8,14 +8,14 @@ public sealed class ToolCallResponse
     /// <summary>
     /// The computed result (null if an error occurred).
     /// </summary>
-    public double? Result { get; init; }
+    public object? Result { get; init; }
 
     /// <summary>
     /// Error message if the tool call failed (null on success).
     /// </summary>
     public string? Error { get; init; }
 
-    public static ToolCallResponse Success(double result) => new() { Result = result };
+    public static ToolCallResponse Success(object result) => new() { Result = result };
     public static ToolCallResponse Failure(string error) => new() { Error = error };
 }
 

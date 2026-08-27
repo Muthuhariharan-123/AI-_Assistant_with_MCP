@@ -125,7 +125,8 @@ public sealed class GeminiClient
                     {
                         text = "You are a helpful AI assistant. When the user asks a math question, " +
                                "use the 'calculate' function to compute the answer. " +
-                               "Always use the calculator for any arithmetic — do not try to calculate mentally."
+                               "Always use the calculator for any arithmetic — do not try to calculate mentally. " +
+                               "When the user asks about the weather, use the 'get_weather' tool."
                     }
                 }
             }
@@ -182,7 +183,8 @@ public sealed class GeminiClient
                     {
                         text = "You are a helpful AI assistant. When the user asks a math question, " +
                                "use the 'calculate' function to compute the answer. " +
-                               "Always use the calculator for any arithmetic — do not try to calculate mentally."
+                               "Always use the calculator for any arithmetic — do not try to calculate mentally. " +
+                               "When the user asks about the weather, use the 'get_weather' tool."
                     }
                 }
             }
@@ -193,7 +195,7 @@ public sealed class GeminiClient
     {
         return new
         {
-            functionDeclarations = new[]
+            functionDeclarations = new object[]
             {
                 new
                 {
@@ -212,6 +214,24 @@ public sealed class GeminiClient
                             }
                         },
                         required = new[] { "expression" }
+                    }
+                },
+                new
+                {
+                    name = "get_weather",
+                    description = "Gets the current weather for a specific location.",
+                    parameters = new
+                    {
+                        type = "object",
+                        properties = new
+                        {
+                            location = new
+                            {
+                                type = "string",
+                                description = "The city and country to get the weather for, e.g. 'London, UK' or 'New York'"
+                            }
+                        },
+                        required = new[] { "location" }
                     }
                 }
             }

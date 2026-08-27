@@ -53,6 +53,39 @@ public sealed class McpClient
         }
     }
 
+    /// <summary>
+    /// Calls the "get_weather" tool on the MCP server.
+    /// </summary>
+    public async Task<string> GetWeatherAsync(string location)
+    {
+        var request = new McpToolCallRequest
+        {
+            Name = "get_weather",
+            Arguments = new Dictionary<string, string> { ["location"] = location }
+        };
+
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("/tools/call", request);
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<McpToolCallResponse>();
+
+            if (result?.Error is not null)
+            {
+                _logger.LogWarning("MCP tool returned error: {Error}", result.Error);
+                return $"Error: {result.Error}";
+            }
+
+            return result?.Result?.ToString() ?? "No result";
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Failed to call MCP server");
+            return "Error: Weather service is unavailable.";
+        }
+    }
+
     // Internal DTOs for MCP server communication
     private sealed class McpToolCallRequest
     {
@@ -66,7 +99,7 @@ public sealed class McpClient
     private sealed class McpToolCallResponse
     {
         [JsonPropertyName("result")]
-        public double? Result { get; init; }
+        public object? Result { get; init; }
 
         [JsonPropertyName("error")]
         public string? Error { get; init; }

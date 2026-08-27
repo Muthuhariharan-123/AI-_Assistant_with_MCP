@@ -11,7 +11,7 @@ builder.WebHost.ConfigureKestrel(options =>
 
 var app = builder.Build();
 
-// Tool definitions — the only tool this MCP server exposes
+// Tool definitions — the only tools this MCP server exposes
 var tools = new List<ToolDefinition>
 {
     new()
@@ -27,6 +27,19 @@ var tools = new List<ToolDefinition>
                 Description = "The math expression to evaluate, e.g. '12 * 7' or '(3 + 4) * 2'"
             }
         }
+    },
+    new()
+    {
+        Name = "get_weather",
+        Description = "Gets the current weather for a specific location.",
+        Parameters = new Dictionary<string, ParameterDefinition>
+        {
+            ["location"] = new()
+            {
+                Type = "string",
+                Description = "The city and country to get the weather for, e.g. 'London, UK' or 'New York'"
+            }
+        }
     }
 };
 
@@ -38,28 +51,37 @@ app.MapPost("/tools/list", () => Results.Ok(new { tools }));
 /// <summary>
 /// POST /tools/call — executes a tool by name with the given arguments.
 /// </summary>
-app.MapPost("/tools/call", (ToolCallRequest request) =>
+app.MapPost("/tools/call", async (ToolCallRequest request) =>
 {
     if (string.IsNullOrWhiteSpace(request.Name))
     {
         return Results.BadRequest(ToolCallResponse.Failure("Tool name is required."));
     }
 
-    if (!string.Equals(request.Name, "calculate", StringComparison.OrdinalIgnoreCase))
-    {
-        return Results.NotFound(ToolCallResponse.Failure($"Unknown tool: {request.Name}"));
-    }
-
-    if (!request.Arguments.TryGetValue("expression", out var expression) ||
-        string.IsNullOrWhiteSpace(expression))
-    {
-        return Results.BadRequest(ToolCallResponse.Failure("Missing required argument: 'expression'."));
-    }
-
     try
     {
-        var result = Calculator.Evaluate(expression);
-        return Results.Ok(ToolCallResponse.Success(result));
+        if (string.Equals(request.Name, "calculate", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!request.Arguments.TryGetValue("expression", out var expression) || string.IsNullOrWhiteSpace(expression))
+            {
+                return Results.BadRequest(ToolCallResponse.Failure("Missing required argument: 'expression'."));
+            }
+            var result = Calculator.Evaluate(expression);
+            return Results.Ok(ToolCallResponse.Success(result));
+        }
+        else if (string.Equals(request.Name, "get_weather", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!request.Arguments.TryGetValue("location", out var location) || string.IsNullOrWhiteSpace(location))
+            {
+                return Results.BadRequest(ToolCallResponse.Failure("Missing required argument: 'location'."));
+            }
+            var result = await WeatherService.GetWeatherAsync(location);
+            return Results.Ok(ToolCallResponse.Success(result));
+        }
+        else
+        {
+            return Results.NotFound(ToolCallResponse.Failure($"Unknown tool: {request.Name}"));
+        }
     }
     catch (ArgumentException ex)
     {

@@ -29,8 +29,14 @@ RUN echo 'server { \
         try_files $uri $uri/ /index.html; \
     } \
     \
-    # Cache static assets \
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf)$ { \
+    # Do not cache JS and CSS so rebuilds are picked up immediately \
+    location ~* \.(js|css)$ { \
+        add_header Cache-Control "no-cache, no-store, must-revalidate"; \
+        add_header Pragma "no-cache"; \
+    } \
+    \
+    # Cache images and fonts \
+    location ~* \.(png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf)$ { \
         expires 1y; \
         add_header Cache-Control "public, immutable"; \
     } \
