@@ -1,12 +1,12 @@
 # AI Assistant with MCP
 
-A lightweight, dockerized AI personal assistant that can answer questions and perform mathematical calculations using the Model Context Protocol (MCP).
+A lightweight, dockerized AI personal assistant that can answer questions, perform mathematical calculations, and fetch real-time weather using the Model Context Protocol (MCP).
 
 ## Tech Stack
 - **Frontend:** Flutter Web (Material 3)
 - **Backend:** ASP.NET Core API
 - **AI Model:** Google Gemini 3.6 Flash
-- **Tools:** C# MCP Server (Calculator)
+- **Tools:** C# MCP Server (Calculator, Weather)
 
 ## How to Run
 
@@ -16,9 +16,8 @@ A lightweight, dockerized AI personal assistant that can answer questions and pe
    ```bash
    docker compose up --build
    ```
-4. Open **http://localhost:8080** in your browser.
 
 ## Features
 - **Modern UI:** Dark mode Flutter interface with chat bubbles.
-- **Smart Tooling:** The AI automatically detects math questions and routes them to the local MCP calculator server.
+- **Smart Tooling:** The AI automatically detects math or weather questions and routes them to the local MCP server.
 - **Secure:** API keys are injected via environment variables and never exposed to the frontend.
